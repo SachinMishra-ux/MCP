@@ -1,0 +1,6 @@
+fastmcp>=2.14.5
+python-dotenv>=1.0.1
+pydantic>=2.10.0
+google-auth>=2.37.0
+google-auth-oauthlib>=1.2.0
+google-auth-httplib2>=0.2.0

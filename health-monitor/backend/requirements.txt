@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+sqlmodel
+psycopg2-binary
+asyncpg
+redis
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
+fastmcp
+websockets
+python-dotenv
+greenlet

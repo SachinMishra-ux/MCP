@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Context Protocol (MCP): Foundations</title>
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it@14.0.0/dist/markdown-it.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.8.0/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            color: #333;
+        }
+
+        h1,
+        h2,
+        h3 {
+            color: #111;
+        }
+
+        h1 {
+            border-bottom: 2px solid #eaeaea;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            border-bottom: 1px solid #eaeaea;
+            padding-bottom: 6px;
+            margin-top: 40px;
+        }
+
+        pre {
+            background: #f6f8fa;
+            padding: 16px;
+            border-radius: 6px;
+            overflow: auto;
+        }
+
+        code {
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 85%;
+        }
+
+        blockquote {
+            border-left: 4px solid #dfe2e5;
+            color: #6a737d;
+            padding-left: 16px;
+            margin: 0;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+
+        th,
+        td {
+            border: 1px solid #dfe2e5;
+            padding: 6px 13px;
+        }
+
+        th {
+            background-color: #f6f8fa;
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        @media print {
+            body {
+                max-width: 100%;
+                padding: 20px;
+            }
+
+            .no-print {
+                display: none;
+            }
+
+            a {
+                text-decoration: none;
+                color: black;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="content"></div>
+
+    <!-- Hidden element to store the markdown content -->
+    <script type="text/markdown" id="raw-markdown">
+# 📘 Model Context Protocol (MCP): Foundations
+
+## 1. What Is MCP?
+
+### Why This Concept Exists
+Large language models (LLMs) like Claude and others are very capable at reasoning and generating text, but they *do not* natively have access to real-time external data, tools, databases, or applications unless explicitly wired in by developers. This limitation creates a major drawback: AI systems struggle to perform actions or fetch live information without custom, brittle integrations. MCP was introduced to solve exactly that problem. :contentReference[oaicite:0]{index=0}
+
+### Purpose
+Model Context Protocol (MCP) is an **open specification and open-source standard** that defines a consistent way for large language models to discover, access, and interact with external tools and data sources via standardized interfaces. It functions like a *universal connector* or “USB-C for LLMs” — enabling AI applications to interact with any compliant resource without bespoke integrations. :contentReference[oaicite:1]{index=1}
+
+### What Problem It Solves
+Without MCP, each model and tool pairing requires custom connection code. If a system has N models and M external systems, that means N×M integrations — which is costly and fragile in practice. MCP collapses this by providing one common protocol that all models and tools can use, thus reducing duplication and improving scalability. :contentReference[oaicite:2]{index=2}
+
+```mermaid
+graph TD
+    subgraph "Without MCP (NxM Integrations)"
+    M1[Model A] <--> T1[Tool 1]
+    M1 <--> T2[Tool 2]
+    M1 <--> T3[Tool 3]
+    M2[Model B] <--> T1
+    M2 <--> T2
+    M2 <--> T3
+    end
+    
+    subgraph "With MCP (Universal Standard)"
+    MA[Model A] <--> P[MCP Protocol]
+    MB[Model B] <--> P
+    P <--> TA[Tool 1]
+    P <--> TB[Tool 2]
+    P <--> TC[Tool 3]
+    end
+```
+
+---
+
+## 2. Why MCP — The N×M Integration Problem
+
+### Why This Concept Is Important
+Traditional integrations rely on bespoke API adapters for each service the model may use. When the number of services or models increases, the cost and complexity grow rapidly. This usually manifests in:
+
+- Hard-coded tool integrations
+- Fragile maintenance when APIs change
+- Siloed tool stacks
+
+MCP provides a standard that all tools can advertise their capabilities in a uniform way so the model doesn’t require custom code for every new integration. :contentReference[oaicite:3]{index=3}
+
+### Purpose
+MCP is designed so LLMs can *dynamically discover* available tools and services at runtime without requiring updates to the core application code for every new integration. :contentReference[oaicite:4]{index=4}
+
+### What Problem It Solves
+It eliminates the need to build custom adapters for each service, reducing engineering effort, lowering maintenance costs, and enabling *plug-and-play tool connectivity* across any compliant system. :contentReference[oaicite:5]{index=5}
+
+---
+
+## 3. MCP vs Traditional API Integrations
+
+### Why Compare This
+Software has long relied on **REST APIs, SDKs, and RPC mechanisms** to connect systems. While these work for many purposes, they lack a unified discovery and invocation mechanism optimized for AI agentic workflows — particularly when it comes to *dynamically discovering tools and capabilities* at runtime.
+
+### Purpose of MCP
+Unlike traditional integrations, MCP:
+
+- Standardizes tool discovery instead of expecting the developer to hard-code endpoints.
+- Provides a common request/response semantic via JSON-RPC.
+- Allows LLMs to *invoke services directly with structured calls*.
+
+This makes systems more modular and dynamic. :contentReference[oaicite:6]{index=6}
+
+### What Problem It Solves
+It overcomes the brittleness of conventional API integrations by making external capabilities available to models via standard protocols, reducing duplicated effort and enabling *runtime tool discovery and invocation*. :contentReference[oaicite:7]{index=7}
+
+---
+
+## 4. High-Level MCP Architecture
+
+The MCP architecture is split into three primary components: the **Host**, the **Client**, and the **Server**. Each plays a distinct role in enabling models to interact with tools and data. :contentReference[oaicite:8]{index=8}
+
+### A. MCP Host
+
+The *MCP Host* is the environment where the AI model and MCP client live. It is responsible for user interaction, session management, orchestration of tool calls, and user interface logic. Examples include desktop AI apps, chat UIs, IDE plugins, or other AI embedded interfaces. :contentReference[oaicite:9]{index=9}
+
+```mermaid
+graph LR
+    H[MCP Host] -->|Contains| C[MCP Client]
+    C <-->|JSON-RPC| S[MCP Server]
+    S -->|Wraps| R[Resource / Tool / API]
+```
+
+---
+
+### B. MCP Client
+
+The *MCP Client* is part of the host that communicates with one or more *MCP Servers* to:
+
+- Discover available tools
+- Invoke tools
+- Format responses back to the AI model
+
+The client speaks the MCP protocol (usually over JSON-RPC) and maintains sessions for efficient communication. :contentReference[oaicite:10]{index=10}
+
+---
+
+### C. MCP Server
+
+An *MCP Server* exposes tools, resources, or actions that the model may call. Internally, these are often wrappers over actual APIs, databases, or workflows, but to the MCP client they present standard metadata, input schemas, and execution logic.
+
+Each server publishes:
+
+- Skills and capabilities it supports
+- Metadata about those tools
+- Invocation interfaces
+
+This allows models to interact with systems without needing embedded knowledge of their underlying APIs. :contentReference[oaicite:11]{index=11}
+
+---
+
+## 5. Protocol and Message Transport
+
+MCP uses **JSON-RPC 2.0** for structured communication between clients and servers. Messages can be transported over multiple mechanisms such as:
+
+- Standard I/O (stdio) — often used for local embedded servers
+- HTTP with SSE (Server-Sent Events) — for remote or streaming interactions
+
+JSON-RPC provides:
+- Standardized request and response formats
+- Uniform error handling
+- Structured execution semantics :contentReference[oaicite:12]{index=12}
+
+---
+
+## 6. Example Architecture Flow
+
+```mermaid
+graph TD
+    subgraph "MCP Host (Chat/IDE/App)"
+        GenericHost[Host Application]
+        Client[MCP Client]
+        GenericHost -- Uses --> Client
+    end
+
+    Client -- "MCP Protocol (JSON-RPC)" --> ServerA[MCP Server A]
+    Client -- "MCP Protocol (JSON-RPC)" --> ServerB[MCP Server B]
+    Client -- "MCP Protocol (JSON-RPC)" --> ServerC[MCP Server C]
+
+    ServerA -- Accesses --> Data[Data/API]
+    ServerB -- Runs --> Workflow[Workflows]
+    ServerC -- Queries --> DB[Search/DB]
+```
+
+---
+
+## 7. Summary of Key Concepts
+
+| Concept | Purpose | Problem Addressed |
+|--------|---------|------------------|
+| MCP Protocol | Standardizes how LLMs access tools | Eliminates repetitive integrations |
+| Client | Communicates with servers | Discovery & invocation |
+| Server | Exposes tools | Wraps APIs/data |
+| Host | Orchestrates model and clients | User interaction |
+
+---
+
+## 8. 🆚 MCP vs Function Calling
+
+### 1. Core Focus
+
+#### Function Calling
+**Deals with *what* action or tool the model should invoke and *when* it should be invoked.**
+
+In practice, a model generates a structured call to a specific function or tool — essentially telling the host: “Call this API/function with these parameters.” This is model-centric and immediate, mainly focused on executing specific tasks.
+
+#### MCP (Model Context Protocol)
+**Focuses on *how* tools are served, discovered, and invoked in a standardized ecosystem.**
+
+It isn’t just about executing one function — it defines a protocol for discovery, capability negotiation, invocation, and standardized responses across many tools and services. MCP enables models to interact with a whole ecosystem of tools through a universal interface.
+
+### Summary
+- **Function calling** answers: *“Call this function.”*
+- **MCP** answers: *“Here’s how all your tools and services are made available, discovered, and called consistently.”*
+
+```mermaid
+graph TD
+    subgraph "Function Calling (The Action)"
+    Model -- "Call tool(args)" --> Host
+    Host -- "Execute specific code" --> Tool
+    end
+
+    subgraph "MCP (The Protocol & Ecosystem)"
+    MCP_Client[MCP Client] -- "List Tools?" --> MCP_Server[MCP Server]
+    MCP_Server -- "Here are Tools A, B, C" --> MCP_Client
+    MCP_Client -- "Call Tool A(schema)" --> MCP_Server
+    MCP_Server -- "Execute Standardized Logic" --> MCP_Tool[Tool Implementation]
+    end
+```
+
+---
+
+## 9. �️ MCP Architecture Components (CampusX Context)
+
+Based on the CampusX "MCP Architecture" insights, the ecosystem is built on a strict **Host-Client-Server** model, designed to be modular and secure.
+
+### 1. MCP Host (The "Brain" / Application)
+- **Definition**: The user-facing application that integrates the LLM (e.g., Claude Desktop, Cursor, or a custom AI agent).
+- **Role**:
+    - Initiates connections.
+    - Manages the "context" window of the model.
+    - Decides *when* to execute a tool based on user intent.
+    - **Analogy**: The "Operating System" or "Runtime" where the AI lives.
+
+### 2. MCP Client (The "Connector")
+- **Definition**: The internal protocol handler within the Host.
+- **Role**:
+    - Maintains 1:1 connections with MCP Servers.
+    - Negotiates capabilities (what tools are available?).
+    - Handles the request/response lifecycle.
+- **Key Function**: It bridges the gap between the chaotic world of the LLM and the structured world of the Servers.
+
+### 3. MCP Server (The "Provider")
+- **Definition**: A lightweight service that exposes specific capabilities to the application.
+- **Three Main Primitives**:
+    - **Resources**: Data sources (reading files, logs, database rows) — *passive context*.
+    - **Prompts**: Pre-written templates for specific tasks — *standardized interactions*.
+    - **Tools**: Executable functions (API calls, computations) — *active actions*.
+- **Role**: It wraps the external world (an API, a DB, a local file) into a standardized format the Client understands.
+
+### 4. Transport Layer (The "Pipe")
+The video emphasizes two main transport mechanisms:
+- **Stdio (Standard I/O)**: Ideal for local tools. The Host runs the Server as a subprocess and talks via standard input/output. Fast and secure for local files.
+- **SSE (Server-Sent Events)**: Used for remote interactions. Allows keeping a connection open for streaming updates, essential for real-time applications.
+
+```mermaid
+graph TD
+    subgraph "MCP Host (The AI App)"
+        LLM[LLM / AI Model]
+        Client[MCP Client]
+        LLM <--> Client
+    end
+
+    subgraph "Transport Layer"
+        Stdio[Stdio / Local Pipe]
+        SSE[HTTP / SSE Remote]
+    end
+
+    subgraph "MCP Servers (The Capabilities)"
+        S1[Server A: File System]
+        S2[Server B: Database]
+    end
+
+    Client <--> Stdio <--> S1
+    Client <--> SSE <--> S2
+```
+
+---
+
+## 10. 🧠 Why MCP Uses JSON-RPC (Not Just JSON)
+
+At first glance, JSON alone is a structured format — so why not just send raw JSON? The answer lies in how MCP needs to organize communication, not just data format.
+
+### 1. JSON is a Data Format, Not a Protocol
+JSON by itself is just a way to represent structured data — similar to XML or YAML. It doesn’t define *how* messages should be exchanged, identified, or responded to — it just defines the shape of data. To turn JSON into a communication protocol, you need additional structure and rules. Plain JSON doesn’t specify:
+- Which messages are requests vs. responses.
+- How to match a response back to the original caller.
+- How to represent errors, notifications, or method names.
+- How to support bi-directional calls.
+
+**JSON-RPC fills those gaps** by defining the semantics of remote calls using JSON as the underlying format.
+
+### 2. JSON-RPC Gives Structured Method Invocation Semantics
+MCP isn’t just about sending data — it’s about calling procedures in servers from a client. JSON-RPC defines remote procedure call semantics using JSON, with clearly defined fields like:
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": { ... }
+}
+```
+
+This adds meaning that pure JSON lacks:
+- **Method Name**: The specific action the server should invoke.
+- **Unique ID**: To track request/response pairs.
+- **Param/Result Structure**: A clear way to pass arguments and get data back.
+
+Without JSON-RPC, MCP would need its own ad-hoc message conventions — which both duplicates effort and reduces interoperability.
+
+### 3. Message Lifecycle & Response Matching
+When the client sends a request, the server must eventually send a response — and the system needs a way to match that response back to the original request.
+- **JSON by itself** cannot do this — it doesn’t define an ID field or response structure.
+- **JSON-RPC defines**:
+    - `id`: Used to match responses to requests.
+    - `result`: The successful return data.
+    - `error`: Error information if the call failed.
+
+This is essential for structured communication, especially when you have multiple calls in flight or asynchronous messages.
+
+### 4. Consistency Across Transports
+MCP isn’t tied to any single transport method — it can run over:
+- Standard input/output (stdio)
+- HTTP or HTTPS
+- Server-Sent Events (SSE)
+
+JSON-RPC provides the uniform structure that stays the same regardless of which transport is used. Without JSON-RPC, MCP would need separate serialization rules per transport, complicating implementations.
+
+### 5. Rich Message Types
+JSON-RPC supports:
+- ✔ **Request messages** (expect responses)
+- ✔ **Notifications** (don’t require a response)
+- ✔ **Batch requests** (multiple calls at once)
+
+Plain JSON has no concept of message type — it’s just a static data representation. These distinctions matter when building robust, asynchronous protocols like MCP.
+
+### 📌 In Summary
+
+| Feature | Plain JSON | JSON-RPC |
+| :--- | :---: | :---: |
+| Only describes data | ✔ | ✔ |
+| Defines call semantics (method, id) | ❌ | ✔ |
+| Supports request/response matching | ❌ | ✔ |
+| Distinguishes requests vs notifications | ❌ | ✔ |
+| Works consistently over multiple transports | ❌ | ✔ |
+
+### 🧠 Bottom Line
+MCP uses **JSON-RPC 2.0** because:
+- ✅ JSON alone is just the format, not a communication protocol.
+- ✅ JSON-RPC defines how requests/responses should work.
+- ✅ It adds structure for method calls, IDs, errors, and notifications.
+- ✅ It’s a standard that MCP can build on instead of reinventing the communication layer.
+
+**In short: JSON = data. JSON-RPC = defined messaging protocol using JSON.** MCP needs the latter to function consistently between clients and servers.
+
+---
+
+## 11. 🔄 MCP Lifecycle
+
+The MCP Lifecycle governs how a host and server establish, use, and end a connection. It consists of three main phases: **Initialization**, **Operation**, and **Shutdown**, plus special handling for pings and errors.
+
+### 1. Initialization Phase
+This is the three-step handshake to establish a valid connection. Neither side should send operational requests until this succeeds.
+
+#### The Handshake Flow
+1.  **Client → Server**: `initialize` request (Protocol version, capabilities).
+2.  **Server → Client**: `initialize` response (Protocol version, capabilities, server info).
+3.  **Client → Server**: `initialized` notification (Confirmation).
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+    
+    Note over Client, Server: Phase 1: Initialization
+    Client->>Server: Request: initialize (v1.0, caps)
+    Server-->>Client: Result: initialize (v1.0, caps)
+    Client->>Server: Notification: initialized
+    Note right of Server: Connection Active
+```
+
+**Example: Client Initialize Request**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2023-10-25",
+    "capabilities": { "roots": {}, "sampling": {} },
+    "implementation": { "name": "Claude-Desktop", "version": "1.0.0" }
+  }
+}
+```
+
+### 2. Operation Phase
+Once connected, the actual work happens. This allows for **Capability Discovery** and **Tool Calling**.
+
+#### Capability Discovery
+The client automatically asks: "What can you do?"
+- Client sends `tool/list`, `resource/list`, `prompt/list`.
+- Server responds with the available inventory.
+
+#### Tool Execution
+The client invokes a specific tool based on the user's intent.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+    
+    Note over Client, Server: Phase 2: Operation
+    Client->>Server: Request: tool/list
+    Server-->>Client: Result: [readFile, listDir, etc.]
+    
+    Client->>Server: Request: tool/call (name="readFile", args={path="..."})
+    Server-->>Client: Result: {content: "File contents..."}
+```
+
+### 3. Shutdown Phase
+Graceful termination of the session.
+
+- **Local (Stdio)**: Client closes the Input Stream. If the server persists, Client sends `SIGTERM` → `SIGKILL`.
+- **Remote (HTTP)**: Client closes the connection.
+
+### 4. Special Cases
+
+#### Pings 🏓
+Used to keep connections alive or verify reachability.
+```json
+{ "jsonrpc": "2.0", "method": "ping", "params": { "id": "abc" } }
+```
+
+#### Progress Notifications ⏳
+For long-running tasks, the server can report progress if the client provides a `progressToken`.
+```json
+{
+  "jsonrpc": "2.0", 
+  "method": "progress", 
+  "params": { 
+    "progressToken": "token1", 
+    "progress": 60, 
+    "message": "Processing..." 
+  }
+}
+```
+
+#### Errors ⚠️
+Standard JSON-RPC errors are used.
+- `-32601`: Method not found.
+- `-32602`: Invalid params.
+
+---
+
+## 12. 🚀 Fast MCP vs. Standard MCP SDK
+
+While the MCP SDK provides the foundational tools (`mcp.server`, `mcp.client`) to build on the protocol, using it directly can be verbose. **Fast MCP** is an abstraction layer (now included in the SDK) designed to simplify this process, much like how **FastAPI** simplifies web development compared to raw WSGI.
+
+### 1. The Challenge with "Normal" MCP SDK
+The standard SDK is powerful but low-level. It requires explicit setup for:
+- Connection management.
+- Request/response handling logic.
+- Error catching and protocol compliance.
+- **Boilerplate**: A simple tool often requires many lines of setup code.
+
+### 2. The Solution: Fast MCP
+Fast MCP wraps the complexity of the lifecycle in a developer-friendly API.
+
+| Feature | Standard MCP SDK | Fast MCP |
+| :--- | :--- | :--- |
+| **Abstraction Level** | Low-level (Protocol details exposed) | High-level (Focus on logic) |
+| **Boilerplate** | High (Verbose setup) | Minimal (Decorators) |
+| **Developer Experience** | Complex for beginners | Intuitive, "Pythonic" |
+| **Analogy** | Raw WSGI / Servlet | FastAPI / Flask |
+
+### 3. Why Use Fast MCP?
+1.  **Developer-Friendly**: Uses Python decorators (`@mcp.tool()`) to instantly turn functions into tools.
+2.  **Less Code**: Handles the heavy lifting of initialization, capability negotiation, and error handling automatically.
+3.  **FastAPI Inspiration**: If you know FastAPI, you know Fast MCP. It uses type hints for validation and descriptions for documentation.
+4.  **Future Standard**: Due to its ease of use, it is becoming the default way to build Python MCP servers.
+
+### 4. Code Comparison
+
+**Standard SDK (Conceptual Boilerplate)**
+```python
+# Requires manual session handling, read streams, write streams, 
+# dispatcher logic, and explicit type checking.
+import asyncio
+from mcp.server import Server
+# ... 50+ lines of setup code ...
+```
+
+**Fast MCP (The "Fast" Way)**
+```python
+from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP("my-server")
+
+@mcp.tool()
+def add(a: int, b: int) -> int:
+    """Adds two numbers"""
+    return a + b
+
+if __name__ == "__main__":
+    mcp.run()
+```
+
+---
+
+## 13. 🤝 FastAPI & FastMCP Compatibility
+
+FastAPI and FastMCP share a similar design philosophy and are built to be compatible. This means you can easily convert a FastAPI application into a FastMCP server and vice-versa.
+
+### 1. The Real-World Example: CPS X
+Imagine a company called **CPS X** that has an existing expense tracker application.
+
+#### Existing Architecture
+- **Platforms**: Website, Android, and iPhone apps.
+- **Backend**: Built using **FastAPI**.
+- **Functionality**: API endpoints for adding, listing, and summarizing expenses.
+
+#### Integrating with MCP
+CPS X wants to extend their expense tracker to chatbot clients like **Claude Desktop** and **ChatGPT**.
+
+#### Seamless Conversion
+Instead of rebuilding the entire server from scratch using FastMCP, the company can directly convert their existing FastAPI application into a FastMCP server.
+- **Mechanism**: Import the FastAPI app into a FastMCP server file and use the `from_fastapi` function.
+- **Result**: Existing API endpoints become MCP tools.
+
+### 2. Benefits
+- **Reduced Development Time**: No need to duplicate efforts.
+- **Code Reusability**: Leverage existing FastAPI codebase.
+- **Expanded Reach**: Quickly integrate with the MCP ecosystem.
+
+---
+
+## 14. References
+
+1. Model Context Protocol official site — basic definition and specification. :contentReference[oaicite:13]{index=13}  
+2. Cloud provider explanation of MCP components and architecture. :contentReference[oaicite:14]{index=14}  
+3. Community-driven doc pages and language SDK descriptions. :contentReference[oaicite:15]{index=15}  
+4. MCP tools and server manifest documentation. :contentReference[oaicite:16]{index=16}
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Get raw markdown
+            const rawMarkdown = document.getElementById('raw-markdown').textContent;
+
+            // Initialize markdown-it
+            const md = window.markdownit({
+                html: true,
+                linkify: true,
+                breaks: true
+            });
+
+            // Convert to HTML
+            // We need a custom rule to handle the "mermaid" code blocks so they don't get wrapped in <pre><code>
+            // But an easier way is to render them, then use regex/DOM manipulation to fix them for Mermaid.js
+
+            let htmlContent = md.render(rawMarkdown);
+
+            // Replace <pre><code class="language-mermaid">...</code></pre> with <div class="mermaid">...</div>
+            // This regex covers standard markdown-it output for fenced code blocks
+            htmlContent = htmlContent.replace(/<pre><code class="language-mermaid">([\s\S]*?)<\/code><\/pre>/g, function (match, code) {
+                // Decode HTML entities if necessary, but usually inner content is just text
+                // Mermaid expects raw text, but markdown-it might have escaped it.
+                // Let's create a temporary element to decode text content if needed, 
+                // but usually simpler replacement works for standard graphs.
+                return '<div class="mermaid">' + code.replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&amp;/g, '&') + '</div>';
+            });
+
+            document.getElementById('content').innerHTML = htmlContent;
+
+            // Initialize Mermaid
+            mermaid.initialize({ startOnLoad: true, theme: 'default' });
+        });
+    </script>
+</body>
+
+</html>
