@@ -195,25 +195,27 @@ def analyze_user_edits(email_id: str, original_draft: str, final_email: str) -> 
     return "Analysis complete. No significant style changes detected."
 
 if __name__ == "__main__":
-    import os
-    transport = os.getenv("MCP_TRANSPORT", "stdio")
-    port = int(os.getenv("PORT", "8000"))
+    # import os
+    # transport = os.getenv("MCP_TRANSPORT", "stdio")
+    # port = int(os.getenv("PORT", "8000"))
     
-    if transport == "sse":
-        print(f"Starting SSE server on port {port}...")
-        # FORCE bind to 0.0.0.0 for AWS App Runner
-        # FastMCP's run() method might not be passing kwargs to uvicorn correctly in all versions.
-        # Accessing the underlying settings/config is safer.
-        try:
-            mcp.settings.host = "0.0.0.0"
-            mcp.settings.port = port
-        except AttributeError:
-            pass # Fallback
+    # if transport == "sse":
+    #     print(f"Starting SSE server on port {port}...")
+    #     # FORCE bind to 0.0.0.0 for AWS App Runner
+    #     # FastMCP's run() method might not be passing kwargs to uvicorn correctly in all versions.
+    #     # Accessing the underlying settings/config is safer.
+    #     try:
+    #         mcp.settings.host = "0.0.0.0"
+    #         mcp.settings.port = port
+    #     except AttributeError:
+    #         pass # Fallback
             
-        # Try running with explicit host kwarg again, just in case
-        try:
-            mcp.run(transport="sse", port=port, host="0.0.0.0")
-        except TypeError:
-             mcp.run(transport="sse", port=port)
-    else:
-        mcp.run(transport="stdio")
+    #     # Try running with explicit host kwarg again, just in case
+    #     try:
+    #         mcp.run(transport="sse", port=port, host="0.0.0.0")
+    #     except TypeError:
+    #          mcp.run(transport="sse", port=port)
+    # else:
+    #     mcp.run(transport="stdio")
+
+    mcp.run(transport="http",host="0.0.0.0", port=8001)
