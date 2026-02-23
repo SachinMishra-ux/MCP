@@ -1,0 +1,31 @@
+servers:
+  filesystem:
+    type: stdio
+    description: Browse local files and folders
+    enabled: true
+    command:
+    - ../.venv/bin/python
+    - server.py
+    cwd: ../filesystem-server
+  email-copilot-local:
+    type: stdio
+    description: "Email Copilot \u2014 local instance"
+    enabled: true
+    command:
+    - ../.venv/bin/python
+    - server.py
+    cwd: ../email-copilot
+  health-monitor:
+    type: stdio
+    description: Health vitals monitor MCP server
+    enabled: true
+    command:
+    - ../../.venv/bin/python
+    - server.py
+    cwd: ../health-monitor/mcp-server
+  Salary prediction Server:
+    type: http
+    description: Remote server at https://salary-prediction-mcp-server.fastmcp.app/mcp
+    enabled: true
+    url: https://salary-prediction-mcp-server.fastmcp.app/mcp
+    auth_token: ""
