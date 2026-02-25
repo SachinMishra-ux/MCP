@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCP Architecture & Block Diagram</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.8.0/dist/mermaid.min.js"></script>
+    <style>
+        :root {
+            --accent: #1a73e8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --muted: #64748b;
+            --code-bg: #f1f5f9;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+
+        header {
+            background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+            color: white;
+            padding: 48px 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2.4rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.85;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        .section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 24px;
+        }
+
+        h3 {
+            font-size: 1.15rem;
+            color: var(--text);
+            margin: 20px 0 8px;
+        }
+
+        p {
+            margin-bottom: 14px;
+            color: #334155;
+        }
+
+        ul,
+        ol {
+            padding-left: 22px;
+            margin-bottom: 14px;
+        }
+
+        li {
+            margin-bottom: 6px;
+            color: #334155;
+        }
+
+        .diagram-box {
+            background: #f0f7ff;
+            border: 1px solid #bee3f8;
+            border-radius: 10px;
+            padding: 24px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+
+        .diagram-label {
+            text-align: center;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 16px;
+            font-size: 0.95rem;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+            font-size: 0.92rem;
+        }
+
+        th,
+        td {
+            border: 1px solid var(--border);
+            padding: 10px 14px;
+            text-align: left;
+        }
+
+        th {
+            background: var(--code-bg);
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        td {
+            color: #334155;
+        }
+
+        code {
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 0.85em;
+            background: var(--code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #c7254e;
+        }
+
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px 24px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-size: 0.88rem;
+            line-height: 1.6;
+            margin: 16px 0;
+        }
+
+        pre code {
+            background: none;
+            color: inherit;
+            padding: 0;
+        }
+
+        .pill {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1d4ed8;
+            border-radius: 99px;
+            padding: 2px 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+
+        .tag-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .tag-orange {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        blockquote {
+            border-left: 4px solid var(--accent);
+            background: #eff6ff;
+            padding: 12px 18px;
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            color: #1e40af;
+            font-style: italic;
+        }
+
+        footer {
+            text-align: center;
+            padding: 32px;
+            color: var(--muted);
+            font-size: 0.875rem;
+            border-top: 1px solid var(--border);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>🏗️ MCP System Architecture</h1>
+        <p>A comprehensive block diagram and detailed explanation of how the Model Context Protocol (MCP) works —
+            including the Client, Server, and JSON-RPC 2.0 messaging layer.</p>
+    </header>
+
+    <div class="container">
+
+        <!-- ─────────────────────────────────────────────── -->
+        <!-- SECTION 1: High-Level Overview Diagram          -->
+        <!-- ─────────────────────────────────────────────── -->
+        <div class="section">
+            <h2>1. High-Level Block Diagram</h2>
+            <p>
+                The MCP architecture is composed of three primary layers: the <strong>Host Environment</strong> (where
+                the user and AI model live), the <strong>Protocol Layer</strong> (JSON-RPC 2.0 messaging over a
+                transport), and the <strong>Server Environment</strong> (where tools and data live). External databases,
+                APIs, and filesystems are connected to the server.
+            </p>
+
+            <div class="diagram-box">
+                <div class="diagram-label">📐 Full MCP Architecture Block Diagram</div>
+                <div class="mermaid">
+                    graph TD
+                    subgraph HOST["🖥️ MCP Host Environment"]
+                    direction TB
+                    User["👤 User"]
+                    HostApp["🤖 Host Application\n(Claude Desktop / IDE / Agent)"]
+                    Client["📡 MCP Client"]
+                    Cache["📋 Client Session State"]
+                    User -->|"User Query"| HostApp
+                    HostApp <-->|"Orchestrates"| Client
+                        Client <-->|"Maintains"| Cache
+                            end
+
+                            subgraph PROTO["⚡ Transport / Protocol Layer"]
+                            direction LR
+                            Stdio["📠 Stdio\n(Local IPC)"]
+                            HTTP["🌐 HTTP + SSE\n(Remote Streaming)"]
+                            end
+
+                            subgraph SERVER["🖧 MCP Server Environment"]
+                            direction TB
+                            Server["⚙️ MCP Server"]
+                            Resources["📄 Resources\n(Read-Only Data)"]
+                            Prompts["💬 Prompts\n(Templates)"]
+                            Tools["🛠️ Tools\n(Executable Functions)"]
+                            Server --> Resources
+                            Server --> Prompts
+                            Server --> Tools
+                            end
+
+                            subgraph EXTERNAL["🗄️ External Systems"]
+                            DB[("Database")]
+                            API["External API"]
+                            FS["Local Filesystem"]
+                            end
+
+                            Client <-->|"JSON-RPC 2.0"| PROTO
+                                PROTO <-->|"JSON-RPC 2.0"| Server
+                                    Resources <--> FS
+                                        Tools <--> API
+                                            Tools <--> DB
+
+                                                style HOST fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px
+                                                style PROTO fill:#fef9c3,stroke:#ca8a04,stroke-width:2px
+                                                style SERVER fill:#dcfce7,stroke:#15803d,stroke-width:2px
+                                                style EXTERNAL fill:#f3e8ff,stroke:#7e22ce,stroke-width:1px
+                </div>
+            </div>
+        </div>
+
+        <!-- ─────────────────────────────────────────────── -->
+        <!-- SECTION 2: Message Flow / Sequence Diagram      -->
+        <!-- ─────────────────────────────────────────────── -->
+        <div class="section">
+            <h2>2. Communication Flow (JSON-RPC 2.0)</h2>
+            <p>
+                Every interaction between the MCP Client and Server follows a strict <strong>request → response</strong>
+                pattern using JSON-RPC 2.0. The lifecycle has three phases: <strong>Initialization</strong>,
+                <strong>Operation</strong>, and <strong>Shutdown</strong>.
+            </p>
+
+            <div class="diagram-box">
+                <div class="diagram-label">🔄 MCP Lifecycle Sequence Diagram</div>
+                <div class="mermaid">
+                    sequenceDiagram
+                    participant User
+                    participant Host as MCP Host
+                    participant Client as MCP Client
+                    participant Server as MCP Server
+                    participant Tool as External Tool / API
+
+                    Note over Client,Server: Phase 1 — Initialization (Handshake)
+                    Client->>Server: initialize {protocolVersion, capabilities}
+                    Server-->>Client: initialize result {capabilities, serverInfo}
+                    Client->>Server: initialized (notification)
+
+                    Note over Client,Server: Phase 2 — Operation
+                    Client->>Server: tools/list
+                    Server-->>Client: [{name, description, inputSchema}, ...]
+
+                    User->>Host: "What is the weather in Mumbai?"
+                    Host->>Client: Process query
+                    Client->>Server: tools/call {name: "get_weather", args: {city: "Mumbai"}}
+                    Server->>Tool: HTTP GET /weather?city=Mumbai
+                    Tool-->>Server: {temp: 32, condition: "Sunny"}
+                    Server-->>Client: result {content: "32°C, Sunny"}
+                    Client-->>Host: Tool result
+                    Host-->>User: "The weather in Mumbai is 32°C, Sunny."
+
+                    Note over Client,Server: Phase 3 — Shutdown
+                    Client->>Server: Close transport / SIGTERM
+                </div>
+            </div>
+        </div>
+
+        <!-- ─────────────────────────────────────────────── -->
+        <!-- SECTION 3: 1 Client Per Server Model            -->
+        <!-- ─────────────────────────────────────────────── -->
+        <div class="section">
+            <h2>3. Multi-Server Architecture (1 Client : 1 Server)</h2>
+            <p>
+                A single Host Application can connect to <strong>multiple MCP Servers simultaneously</strong>. Each
+                connection is managed by a dedicated, isolated MCP Client instance. This keeps servers modular — if one
+                server fails, the others are unaffected.
+            </p>
+
+            <div class="diagram-box">
+                <div class="diagram-label">🔀 Multi-Server Connection Model</div>
+                <div class="mermaid">
+                    graph LR
+                    subgraph HOST["🖥️ Host Application"]
+                    LLM["🤖 LLM / AI Model"]
+                    Orch["Orchestration Logic"]
+                    C1["Client 1"]
+                    C2["Client 2"]
+                    C3["Client 3"]
+                    LLM <--> Orch
+                        Orch --> C1
+                        Orch --> C2
+                        Orch --> C3
+                        end
+
+                        C1 -- "Stdio (local)" --> S1["📁 MCP Server:\nFilesystem"]
+                        C2 -- "HTTP / SSE (remote)" --> S2["🗃️ MCP Server:\nDatabase"]
+                        C3 -- "HTTP / SSE (remote)" --> S3["🔍 MCP Server:\nWeb Search"]
+
+                        style HOST fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px
+                </div>
+            </div>
+        </div>
+
+        <!-- ─────────────────────────────────────────────── -->
+        <!-- SECTION 4: Component Details                    -->
+        <!-- ─────────────────────────────────────────────── -->
+        <div class="section">
+            <h2>4. Component Deep-Dive</h2>
+
+            <h3>📡 A. MCP Client</h3>
+            <p>The <strong>MCP Client</strong> is embedded inside the Host Application. It is the protocol-level
+                connector that manages all communication with one specific MCP Server.</p>
+            <table>
+                <tr>
+                    <th>Responsibility</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>Session Management</td>
+                    <td>Establishes and maintains a stateful connection with one MCP Server</td>
+                </tr>
+                <tr>
+                    <td>Capability Negotiation</td>
+                    <td>Exchanges supported features during initialization handshake</td>
+                </tr>
+                <tr>
+                    <td>Tool Discovery</td>
+                    <td>Calls <code>tools/list</code> to fetch all available tools from the server</td>
+                </tr>
+                <tr>
+                    <td>Tool Invocation</td>
+                    <td>Sends <code>tools/call</code> requests and returns results to the host</td>
+                </tr>
+                <tr>
+                    <td>Resource Access</td>
+                    <td>Calls <code>resources/list</code> and <code>resources/read</code> for passive data</td>
+                </tr>
+                <tr>
+                    <td>Transport Abstraction</td>
+                    <td>Works over stdio (local) or HTTP/SSE (remote) transparently</td>
+                </tr>
+            </table>
+
+            <h3>⚙️ B. MCP Server</h3>
+            <p>The <strong>MCP Server</strong> is a lightweight service that wraps external systems (APIs, databases,
+                filesystems) into standardized MCP-compatible interfaces. It exposes three types of primitives:</p>
+            <table>
+                <tr>
+                    <th>Primitive</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td><strong>Resources</strong></td>
+                    <td><span class="pill tag-green">Passive</span></td>
+                    <td>Read-only data (files, logs, DB rows). Provide context to the model.</td>
+                </tr>
+                <tr>
+                    <td><strong>Prompts</strong></td>
+                    <td><span class="pill">Template</span></td>
+                    <td>Pre-defined prompt templates for standardized interactions.</td>
+                </tr>
+                <tr>
+                    <td><strong>Tools</strong></td>
+                    <td><span class="pill tag-orange">Active</span></td>
+                    <td>Executable functions. The model can call these to perform real actions.</td>
+                </tr>
+            </table>
+
+            <h3>⚡ C. JSON-RPC 2.0 Protocol</h3>
+            <p>MCP uses <strong>JSON-RPC 2.0</strong> as its communication protocol. It adds structured messaging
+                semantics on top of plain JSON — including <code>method</code> names, unique <code>id</code> tracking,
+                and standard error handling.</p>
+            <blockquote>JSON = data format. JSON-RPC 2.0 = a complete communication protocol built on JSON. MCP needs
+                the latter to function reliably between clients and servers.</blockquote>
+        </div>
+
+        <!-- ─────────────────────────────────────────────── -->
+        <!-- SECTION 5: JSON-RPC Messages                    -->
+        <!-- ─────────────────────────────────────────────── -->
+        <div class="section">
+            <h2>5. JSON-RPC 2.0 Message Examples</h2>
+            <p>Every MCP interaction is encoded as a JSON-RPC 2.0 message. Here are the key message types:</p>
+
+            <h3>① Initialize Request (Client → Server)</h3>
+            <pre><code>{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "method": "initialize",
+  "params": {
+    "protocolVersion": "2023-10-25",
+    "capabilities": { "roots": {}, "sampling": {} },
+    "implementation": { "name": "Claude-Desktop", "version": "1.0.0" }
+  }
+}</code></pre>
+
+            <h3>② Tool Call Request (Client → Server)</h3>
+            <pre><code>{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call",
+  "params": {
+    "name": "get_weather",
+    "arguments": { "city": "San Francisco" }
+  }
+}</code></pre>
+
+            <h3>③ Tool Call Response (Server → Client)</h3>
+            <pre><code>{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      { "type": "text", "text": "Current weather: 65°F, Sunny" }
+    ]
+  }
+}</code></pre>
+
+            <h3>④ Error Response</h3>
+            <pre><code>{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "error": {
+    "code": -32601,
+    "message": "Method not found"
+  }
+}</code></pre>
+        </div>
+
+        <!-- ─────────────────────────────────────────────── -->
+        <!-- SECTION 6: Transport Layer                      -->
+        <!-- ─────────────────────────────────────────────── -->
+        <div class="section">
+            <h2>6. Transport Mechanisms</h2>
+            <p>MCP is transport-agnostic — the same JSON-RPC 2.0 messages are used regardless of the underlying
+                transport.</p>
+
+            <div class="diagram-box">
+                <div class="diagram-label">🔌 Transport Selection Guide</div>
+                <div class="mermaid">
+                    graph TD
+                    D{Where is\nthe server?}
+                    D -- "Same machine\n(local)" --> Stdio["📠 Stdio Transport\n• Host launches server as subprocess\n•
+                    Talks via stdin / stdout\n• Fast, secure, no network config"]
+                    D -- "Remote server\n(cloud / internet)" --> HTTP["🌐 HTTP + SSE Transport\n• Persistent HTTP
+                    connection\n• Server-Sent Events for streaming\n• Real-time updates possible"]
+
+                    style Stdio fill:#dcfce7,stroke:#15803d,stroke-width:2px
+                    style HTTP fill:#dbeafe,stroke:#1d4ed8,stroke-width:2px
+                </div>
+            </div>
+
+            <table>
+                <tr>
+                    <th>Transport</th>
+                    <th>Best For</th>
+                    <th>Examples</th>
+                </tr>
+                <tr>
+                    <td><strong>Stdio</strong></td>
+                    <td>Local tools, filesystem access, CLI tools</td>
+                    <td>File system server, local database</td>
+                </tr>
+                <tr>
+                    <td><strong>HTTP / SSE</strong></td>
+                    <td>Remote APIs, cloud services, shared team servers</td>
+                    <td>Email Copilot, deployed servers on AWS</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- ─────────────────────────────────────────────── -->
+        <!-- SECTION 7: Summary Table                        -->
+        <!-- ─────────────────────────────────────────────── -->
+        <div class="section">
+            <h2>7. Architecture Summary</h2>
+            <table>
+                <tr>
+                    <th>Component</th>
+                    <th>Lives In</th>
+                    <th>Role</th>
+                    <th>Key Actions</th>
+                </tr>
+                <tr>
+                    <td><strong>Host App</strong></td>
+                    <td>User's environment</td>
+                    <td>AI application (IDE, chat)</td>
+                    <td>Captures user intent, renders results</td>
+                </tr>
+                <tr>
+                    <td><strong>MCP Client</strong></td>
+                    <td>Inside Host App</td>
+                    <td>Protocol connector</td>
+                    <td>Handshake, tool discovery, invocation</td>
+                </tr>
+                <tr>
+                    <td><strong>JSON-RPC 2.0</strong></td>
+                    <td>Transport layer</td>
+                    <td>Communication standard</td>
+                    <td>Structures all requests/responses</td>
+                </tr>
+                <tr>
+                    <td><strong>MCP Server</strong></td>
+                    <td>Local or remote</td>
+                    <td>Capability provider</td>
+                    <td>Exposes Resources, Prompts, Tools</td>
+                </tr>
+                <tr>
+                    <td><strong>External Systems</strong></td>
+                    <td>Behind the server</td>
+                    <td>Actual data/logic</td>
+                    <td>APIs, databases, filesystems</td>
+                </tr>
+            </table>
+        </div>
+
+    </div>
+
+    <footer>
+        <p>📘 Model Context Protocol (MCP) Architecture Reference &nbsp;|&nbsp; Protocol: JSON-RPC 2.0 &nbsp;|&nbsp;
+            Transports: Stdio, HTTP/SSE</p>
+    </footer>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'base',
+            themeVariables: {
+                primaryColor: '#dbeafe',
+                primaryTextColor: '#1e293b',
+                primaryBorderColor: '#1d4ed8',
+                lineColor: '#475569',
+                secondaryColor: '#dcfce7',
+                tertiaryColor: '#fef9c3'
+            },
+            flowchart: { curve: 'basis', padding: 20 },
+            sequence: { actorMargin: 80 }
+        });
+    </script>
+</body>
+
+</html>
