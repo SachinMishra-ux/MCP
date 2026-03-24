@@ -23,3 +23,9 @@ servers:
     - ../../.venv/bin/python
     - server.py
     cwd: ../health-monitor/mcp-server
+  Salary Prediction MCP Server:
+    type: http
+    description: Remote server at https://salary-mcp-prediction.fastmcp.app/mcp
+    enabled: true
+    url: https://salary-mcp-prediction.fastmcp.app/mcp
+    auth_token: fmcp_F4FROEZkJmNN70pr5OcOg0i-l7VO_J_zAtnzLyMfHhY
