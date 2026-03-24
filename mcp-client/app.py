@@ -193,7 +193,7 @@ with st.sidebar:
 
     provider = st.selectbox(
         "Provider",
-        ["Anthropic Claude", "OpenAI GPT"],
+        ["Anthropic Claude", "OpenAI GPT", "Groq"],
         label_visibility="collapsed",
         key="llm_provider",
     )
@@ -209,6 +209,11 @@ with st.sidebar:
             "gpt-4o-mini",
             "gpt-4-turbo",
         ],
+        "Groq": [
+            "llama3-70b-8192",
+            "llama3-8b-8192",
+            "mixtral-8x7b-32768",
+        ],
     }
     model = st.selectbox(
         "Model",
@@ -217,7 +222,12 @@ with st.sidebar:
         key="llm_model",
     )
 
-    env_key_name = "ANTHROPIC_API_KEY" if provider == "Anthropic Claude" else "OPENAI_API_KEY"
+    if provider == "Anthropic Claude":
+        env_key_name = "ANTHROPIC_API_KEY"
+    elif provider == "OpenAI GPT":
+        env_key_name = "OPENAI_API_KEY"
+    else:
+        env_key_name = "GROQ_API_KEY"
     default_key = os.getenv(env_key_name, "")
     api_key = st.text_input(
         "API Key",

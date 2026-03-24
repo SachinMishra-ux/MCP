@@ -5,7 +5,7 @@ A custom multi-server MCP client that aggregates all your MCP servers into a sin
 ## Features
 
 - 🔗 Connect to **multiple MCP servers** simultaneously (stdio + HTTP/remote)
-- 🤖 **AI-powered chat** using Anthropic Claude or OpenAI GPT
+- 🤖 **AI-powered chat** using Anthropic Claude, OpenAI GPT, or Groq
 - 🔧 **Tool discovery** — automatically lists all tools from connected servers
 - 🌐 **Remote server support** — add any HTTP MCP server via URL
 - 💬 **Expandable tool calls** — see exactly what tools were called and the results
@@ -37,7 +37,7 @@ uv add streamlit anthropic openai pyyaml
 
 ```bash
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY or OPENAI_API_KEY
+# Edit .env and add your ANTHROPIC_API_KEY, OPENAI_API_KEY, or GROQ_API_KEY
 ```
 
 ### 3. (Optional) Start the Email Copilot HTTP server first
@@ -97,5 +97,5 @@ Streamlit UI (app.py)
     │
     └── LLM Agent (llm_agent.py)
             ├── AnthropicAgent  (Claude)
-            └── OpenAIAgent     (GPT)
+            └── OpenAIAgent     (GPT / Groq)
 ```

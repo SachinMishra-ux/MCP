@@ -172,13 +172,17 @@ class AnthropicAgent:
 class OpenAIAgent:
     """Drives OpenAI GPT to use MCP tools in a multi-turn loop."""
 
-    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o"):
+    def __init__(self, api_key: Optional[str] = None, model: str = "gpt-4o", base_url: Optional[str] = None):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY", "")
         self.model = model
+        self.base_url = base_url
 
     def _get_client(self):
         from openai import OpenAI
-        return OpenAI(api_key=self.api_key)
+        kwargs = {"api_key": self.api_key}
+        if self.base_url:
+            kwargs["base_url"] = self.base_url
+        return OpenAI(**kwargs)
 
     def _convert_tools_to_openai(self, tools: List[Dict]) -> List[Dict]:
         """Convert Anthropic-style tool schema to OpenAI function calling format."""
@@ -295,5 +299,7 @@ def get_agent(provider: str, api_key: str, model: str):
         return AnthropicAgent(api_key=api_key, model=model)
     elif provider == "OpenAI GPT":
         return OpenAIAgent(api_key=api_key, model=model)
+    elif provider == "Groq":
+        return OpenAIAgent(api_key=api_key, model=model, base_url="https://api.groq.com/openai/v1")
     else:
         raise ValueError(f"Unknown provider: {provider}")
