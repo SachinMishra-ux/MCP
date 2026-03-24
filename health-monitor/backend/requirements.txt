@@ -6,7 +6,7 @@ asyncpg
 redis
 python-multipart
 python-jose[cryptography]
-passlib[bcrypt]
+bcrypt
 fastmcp
 websockets
 python-dotenv

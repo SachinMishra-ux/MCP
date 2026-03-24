@@ -44,9 +44,12 @@ async def simulate_vitals(token: str):
             
             await asyncio.sleep(2)  # Wait 2 seconds between readings
 
+import sys
+
 async def main():
-    username = "test_patient"
-    password = "test123"
+    # Use command-line arguments if provided, else defaults
+    username = sys.argv[1] if len(sys.argv) > 1 else "test_patient"
+    password = sys.argv[2] if len(sys.argv) > 2 else "test123"
     
     # Register or login
     async with httpx.AsyncClient() as client:

@@ -172,8 +172,11 @@ Open: http://localhost:3000
 **Simulate Vitals:**
 ```bash
 cd backend
-python simulate_vitals.py
+python simulate_vitals.py or with login user:
+python simulate_vitals.py test123 test123
+
 ```
+
 
 This will:
 - Register a test user (`test_patient`)
