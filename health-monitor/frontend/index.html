@@ -292,6 +292,20 @@
 
             renderVitals();
             setupChart();
+
+            // Fetch and display existing alerts from DB
+            try {
+                const alertRes = await fetch(`${API_URL}/alerts`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (alertRes.ok) {
+                    const existingAlerts = await alertRes.json();
+                    existingAlerts.forEach(a => handleAlert(a));
+                }
+            } catch (e) {
+                console.warn('Could not load existing alerts:', e);
+            }
+
             setupWebSocket();
         }
 

@@ -107,6 +107,34 @@ async def get_my_vitals(
     result = await session.exec(statement)
     return result.all()
 
+# --- Get recent alerts for MCP / initial UI load ---
+@app.get("/alerts", response_model=list[dict])
+async def get_my_alerts(
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    from models import Alert
+    statement = select(Alert).where(Alert.user_id == current_user.id).order_by(Alert.created_at.desc()).limit(20)
+    result = await session.exec(statement)
+    alerts = result.all()
+    return [
+        {
+            "metric": a.metric,
+            "message": a.message,
+            "severity": a.severity,
+            "created_at": a.created_at.isoformat(),
+        }
+        for a in alerts
+    ]
+
+# --- Public health-check (no auth required) ---
+# A simple endpoint to verify the server is alive.
+# Added here to demonstrate FastMCP.from_fastapi() auto-discovery.
+@app.get("/health-check", tags=["public"])
+async def health_check():
+    """Check if the Health Monitor backend is running."""
+    return {"status": "ok", "message": "Health Monitor backend is running."}
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -99,3 +99,29 @@ Streamlit UI (app.py)
             ├── AnthropicAgent  (Claude)
             └── OpenAIAgent     (GPT / Groq)
 ```
+---
+
+```
+
+           ┌──────────────────────────────────────────┐
+           │          Streamlit UI (app.py)           │
+           └────────────────────┬─────────────────────┘
+                                │ Calls proxy methods
+           ┌────────────────────▼─────────────────────┐
+           │      Background Worker & Async Loop      │
+           └────────────────────┬─────────────────────┘
+                                │ Orchestrates
+     ┌──────────────────────────┴──────────────────────────┐
+     ▼                                                     ▼
+┌──────────────────────────┐                         ┌───────────┐
+│  Multi-Server Manager    │                         │ LLM Agent │
+│       (client.py)        │                         │  (llm_...)│
+└────────────┬─────────────┘                         └─────┬─────┘
+  Reads/Writes config.yaml                                 │ Drives
+             │                                             │
+             ▼                                             ▼
+  ┌─────────────────────────────────────────────────────────────┐
+  │ Local Stdio Servers (Filesystem, Email-copilot, Health)     │
+  │ Remote HTTP Servers (Salary Prediction API)                 │
+  └─────────────────────────────────────────────────────────────┘
+```

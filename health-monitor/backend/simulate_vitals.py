@@ -51,25 +51,25 @@ async def main():
     username = sys.argv[1] if len(sys.argv) > 1 else "test_patient"
     password = sys.argv[2] if len(sys.argv) > 2 else "test123"
     
-    # Register or login
+    # Always try LOGIN first so we reuse the existing UUID.
+    # Only register if the user doesn't exist yet.
     async with httpx.AsyncClient() as client:
-        # Try to register
+        # --- Step 1: try login ---
         response = await client.post(
-            f"{API_URL}/auth/register",
-            json={"username": username, "password": password}
+            f"{API_URL}/auth/token",
+            data={"username": username, "password": password}
         )
-        
         if response.status_code == 200:
-            print(f"✓ Registered as {username}")
+            print(f"✓ Logged in as {username}")
             token = response.json()["access_token"]
         else:
-            # Try to login
+            # --- Step 2: user doesn't exist yet, register ---
             response = await client.post(
-                f"{API_URL}/auth/token",
-                data={"username": username, "password": password}
+                f"{API_URL}/auth/register",
+                json={"username": username, "password": password}
             )
             if response.status_code == 200:
-                print(f"✓ Logged in as {username}")
+                print(f"✓ Registered as {username}")
                 token = response.json()["access_token"]
             else:
                 print(f"✗ Failed to authenticate: {response.text}")

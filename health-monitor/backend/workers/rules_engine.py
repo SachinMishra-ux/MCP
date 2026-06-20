@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import sys
+import traceback
 from datetime import datetime, timezone
 from pathlib import Path
 from dotenv import load_dotenv
@@ -54,7 +55,10 @@ async def process_vital_event(event_data: dict):
             return
         
         vital_dict = json.loads(vital_json)
-        vital = Vital(**vital_dict)
+
+        # Use model_validate so UUID and datetime strings are properly coerced.
+        # Plain Vital(**vital_dict) fails because JSON has strings, not UUID/datetime.
+        vital = Vital.model_validate(vital_dict)
         
         # Evaluate rules
         triggered = evaluate_rules(vital)
@@ -63,29 +67,39 @@ async def process_vital_event(event_data: dict):
             async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
             async with async_session() as session:
                 for rule in triggered:
-                    message = f"{vital.metric.upper()} alert: {vital.value} {rule['condition']} {rule['threshold']}"
+                    # Build a human-friendly message per rule
+                    direction = "above" if rule["condition"] == "gt" else "below"
+                    message = (
+                        f"{vital.metric.replace('_', ' ').title()} is {direction} threshold: "
+                        f"{vital.value} (limit: {rule['threshold']})"
+                    )
                     alert = Alert(
                         user_id=vital.user_id,
                         metric=vital.metric,
                         message=message,
                         severity=rule["severity"],
-                        is_active=True
+                        is_active=True,
                     )
                     session.add(alert)
                     print(f"[ALERT] {message} for user {vital.user_id}")
+                    
+                    # Publish each alert individually so the frontend receives
+                    # a correctly-paired message + severity for every rule.
+                    await redis_client.publish(
+                        f"alerts:{str(vital.user_id)}",
+                        json.dumps({
+                            "metric": vital.metric,
+                            "value": vital.value,
+                            "severity": rule["severity"],
+                            "message": message,
+                        }),
+                    )
                 
                 await session.commit()
-                
-                # Publish alert to Redis for real-time notification
-                await redis_client.publish(f"alerts:{str(vital.user_id)}", json.dumps({
-                    "metric": vital.metric,
-                    "value": vital.value,
-                    "severity": triggered[0]["severity"],
-                    "message": message
-                }))
     
     except Exception as e:
         print(f"Error processing event: {e}")
+        traceback.print_exc()
 
 async def worker():
     """Main worker loop that consumes from Redis Stream."""
